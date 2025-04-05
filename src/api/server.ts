@@ -9,7 +9,8 @@ import apiRouter from './routes';
 dotenv.config()
 
 const app = express();
-const port = process.env.PORT || 8002;
+const port = process.env.PORT || 8001;
+
 
 // Parse JSON and URL-encoded bodies
 app.use(express.json());
@@ -23,7 +24,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.disable('x-powered-by');
 app.use("/api", apiRouter);
-
 
 // Define your custom middleware
 app.use((req, res, next) => {
@@ -49,7 +49,6 @@ mongoose.connect(process.env.MONGO_DB_CONNECTION_STRING)
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Blast API' });
 });
-
 
 // Create HTTP server
 app.listen(port, () => {
