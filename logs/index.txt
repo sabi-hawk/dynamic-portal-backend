@@ -110,3 +110,11 @@
 {"level":"debug","message":"Http Request | Complete: POST : /api/auth/login"}
 {"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
 {"level":"debug","message":"Http Request | Complete: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/register"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/register"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/teacher/add"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/teacher/add"}
