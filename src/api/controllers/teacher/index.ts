@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { httpMethod, HttpError } from "..";
+import User from "@models/User";
 import Teacher from "@models/Teacher";
 
 // Add new teacher
@@ -26,11 +27,28 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
   res.status(201).json({ message: "Teacher added successfully", teacher });
 });
 
-// Get all teachers
 export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
-  const teachers = await Teacher.find().sort({ createdAt: -1 });
-  res.status(200).json(teachers);
+  const teachers = await Teacher.find()
+    .populate({ path: 'userId', select: 'email' })
+    .sort({ createdAt: -1 });
+
+  const formattedTeachers = teachers.map(teacher => {
+    const teacherObj = teacher.toObject();
+
+    // Type assertion: tell TypeScript that userId is now of the expected populated type
+    const user = teacherObj.userId as { email?: string };
+
+    return {
+      ...teacherObj,
+      email: user?.email || null,
+    };
+  });
+
+  res.status(200).json(formattedTeachers);
 });
+
+
+
 
 // Delete teacher
 export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {

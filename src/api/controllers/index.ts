@@ -42,6 +42,7 @@ export function httpMethod(method: HttpMethod): HttpMethod {
 
       Logger.debug(`Http Request | Complete: ${methodName}`, JSON.stringify(resp, null, 2));
     } catch (e: unknown) {
+      console.log("ERROR IS:", e)
       const error = e instanceof HttpError ? e : new HttpError(500, "Internal Server Error");
       Logger.debug(
         `Http Request | Error: ${methodName}`,

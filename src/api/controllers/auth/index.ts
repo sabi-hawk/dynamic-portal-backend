@@ -6,7 +6,40 @@ import bcrypt from "bcrypt";
 import { SECRET } from "@config/app/index";
 import User, { UserType } from "@models/User";
 import Session from "@models/Session";
+import Student from "@models/Student";
+import Teacher from "@models/Teacher";
 
+type StudentRegisterData = {
+    studentData: {
+        rollNo: string;
+        department?: string;
+        gender: string;
+        mobile: string;
+        admissionDate: Date;
+    };
+    role: "student";
+};
+
+type TeacherRegisterData = {
+    teacherData: {
+        department?: string;
+        mobile: string;
+        address?: string;
+        status?: "active" | "inactive";
+        joiningDate?: Date;
+        gender?: "Male" | "Female" | "Other";
+        degree?: "Bachelors" | "Masters" | "PhD";
+    };
+    role: "teacher";
+};
+
+function isStudent(data: any): data is StudentRegisterData {
+    return data.role === "student" && "studentData" in data;
+}
+
+function isTeacher(data: any): data is TeacherRegisterData {
+    return data.role === "teacher" && "teacherData" in data;
+}
 
 export const register = httpMethod(async (req: Request, res: Response): Promise<void> => {
     const reqData = await validateRegisterRequest(req);
@@ -15,7 +48,19 @@ export const register = httpMethod(async (req: Request, res: Response): Promise<
         throw new HttpError(400, "Email Already Exists!");
     }
     const hashedPassword = await bcrypt.hash(reqData.password, 10);
-    const user = await User.create({ ...reqData, password: hashedPassword });
+    const user = await User.create({ ...reqData, password: hashedPassword, role: reqData.role });
+    // Role-specific creation
+    if (isStudent(reqData)) {
+        await Student.create({
+            userId: user._id,
+            ...reqData.studentData,
+        });
+    } else if (isTeacher(reqData)) {
+        await Teacher.create({
+            userId: user._id,
+            ...reqData.teacherData,
+        });
+    }
     res.status(201).json({ user: { username: user.username, email: user.email }, message: "Signed Up Successfully !" })
 })
 
