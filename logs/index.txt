@@ -163,6 +163,7 @@
 {"level":"debug","message":"Http Request | Start: POST : /api/auth/register"}
 {"level":"debug","message":"Http Request | Error: POST : /api/auth/register"}
 {"level":"debug","message":"Http Request | Start: POST : /api/auth/register"}
+<<<<<<< Updated upstream
 {"level":"debug","message":"Http Request | Error: POST : /api/auth/register"}
 {"level":"debug","message":"Http Request | Start: POST : /api/auth/register"}
 {"level":"debug","message":"Http Request | Error: POST : /api/auth/register"}
@@ -178,3 +179,20 @@
 {"level":"debug","message":"Http Request | Complete: GET : /api/settings/portal"}
 {"level":"debug","message":"Http Request | Start: PUT : /api/settings/portal"}
 {"level":"debug","message":"Http Request | Complete: PUT : /api/settings/portal"}
+=======
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/register"}
+{"level":"debug","message":"Http Request | Start: GET : /api/student/"}
+{"level":"debug","message":"Http Request | Complete: GET : /api/student/"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Error: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Error: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Error: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Error: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/changePassword"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/changePassword"}
+{"level":"debug","message":"Http Request | Start: POST : /api/auth/login"}
+{"level":"debug","message":"Http Request | Complete: POST : /api/auth/login"}
+>>>>>>> Stashed changes
