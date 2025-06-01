@@ -5,7 +5,7 @@ import Teacher from "@models/Teacher";
 
 // Add new teacher
 export const addTeacher = httpMethod(async (req: Request, res: Response) => {
-  const { name, department, mobile, email, address, status, joiningDate, gender, degree } = req.body;
+  const { name, department, mobile, email, address, status, joiningDate, gender, degree, section } = req.body;
 
   const existing = await Teacher.findOne({ email });
   if (existing) {
@@ -22,6 +22,7 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
     joiningDate,
     gender,
     degree,
+    section,
   });
 
   res.status(201).json({ message: "Teacher added successfully", teacher });
