@@ -1,10 +1,12 @@
 // routes/studentRouter.ts
 import express from "express";
-import { addStudent, getAllStudents } from "@controllers/student";
+import * as studentController from "@controllers/student";
 
-const router = express.Router();
+const studentRouter = express.Router();
 
-router.post("/add", addStudent);
-router.get("/", getAllStudents);
+studentRouter.post("/add", studentController.addStudent);
+studentRouter.get("/", studentController.getStudents);
+studentRouter.put("/:id", studentController.updateStudent);
+studentRouter.delete("/:id", studentController.deleteStudent);
 
-export default router;
+export default studentRouter;

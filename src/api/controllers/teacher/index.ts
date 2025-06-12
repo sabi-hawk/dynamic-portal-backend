@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { httpMethod, HttpError } from "..";
 import User from "@models/User";
 import Teacher from "@models/Teacher";
+import bcrypt from "bcrypt";
 
 // Add new teacher
 export const addTeacher = httpMethod(async (req: Request, res: Response) => {
@@ -30,43 +31,81 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
 
 export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
   const teachers = await Teacher.find()
-    .populate({ path: 'userId', select: 'email' })
+    .populate({ path: 'userId', select: 'email name' })
     .sort({ createdAt: -1 });
 
   const formattedTeachers = teachers.map(teacher => {
     const teacherObj = teacher.toObject();
 
     // Type assertion: tell TypeScript that userId is now of the expected populated type
-    const user = teacherObj.userId as { email?: string };
+    const user = teacherObj.userId as { email?: string; name?: { first: string; last: string } };
 
     return {
       ...teacherObj,
       email: user?.email || null,
+      name: user?.name || null,
     };
   });
 
   res.status(200).json(formattedTeachers);
 });
 
-
-
-
 // Delete teacher
 export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const teacher = await Teacher.findByIdAndDelete(id);
+  
+  // Find the teacher first to get their userId
+  const teacher = await Teacher.findById(id);
   if (!teacher) {
     throw new HttpError(404, "Teacher not found");
   }
-  res.status(200).json({ message: "Teacher deleted successfully" });
+
+  // Delete the associated user by userId
+  if (teacher.userId) {
+    await User.findByIdAndDelete(teacher.userId);
+  }
+
+  // Delete the teacher
+  await Teacher.findByIdAndDelete(id);
+
+  res.status(200).json({ message: "Teacher and associated user deleted successfully" });
 });
 
 // Update teacher
 export const updateTeacher = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true });
-  if (!updatedTeacher) {
+  const updateData = req.body;
+
+  // Find the teacher first
+  const teacher = await Teacher.findById(id);
+  if (!teacher) {
     throw new HttpError(404, "Teacher not found");
   }
-  res.status(200).json({ message: "Teacher updated", teacher: updatedTeacher });
+
+  // If email, password, or name is being updated, update the user record
+  if (updateData.email || updateData.password || updateData.name) {
+    const userUpdate: any = {};
+    if (updateData.email) userUpdate.email = updateData.email;
+    if (updateData.password) {
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      userUpdate.password = hashedPassword;
+    }
+    if (updateData.name) userUpdate.name = updateData.name;
+    await User.findByIdAndUpdate(teacher.userId, userUpdate);
+  }
+
+  // Remove email and password from teacher update data
+  const { email, password, ...teacherUpdateData } = updateData;
+
+  // Update the teacher record
+  const updatedTeacher = await Teacher.findByIdAndUpdate(
+    id,
+    teacherUpdateData,
+    { new: true }
+  );
+
+  res.status(200).json({ 
+    message: "Teacher updated successfully", 
+    teacher: updatedTeacher 
+  });
 });

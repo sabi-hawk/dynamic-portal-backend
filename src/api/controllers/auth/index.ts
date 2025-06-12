@@ -9,7 +9,15 @@ import Session from "@models/Session";
 import Student from "@models/Student";
 import Teacher from "@models/Teacher";
 
-type StudentRegisterData = {
+type BaseRegisterData = {
+    role: string;
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+};
+
+type StudentRegisterData = BaseRegisterData & {
     studentData: {
         rollNo: string;
         department?: string;
@@ -20,7 +28,7 @@ type StudentRegisterData = {
     role: "student";
 };
 
-type TeacherRegisterData = {
+type TeacherRegisterData = BaseRegisterData & {
     teacherData: {
         department?: string;
         mobile: string;
@@ -29,26 +37,44 @@ type TeacherRegisterData = {
         joiningDate?: Date;
         gender?: "Male" | "Female" | "Other";
         degree?: "Bachelors" | "Masters" | "PhD";
+        section?: string;
     };
     role: "teacher";
 };
 
-function isStudent(data: any): data is StudentRegisterData {
+type RegisterData = BaseRegisterData | StudentRegisterData | TeacherRegisterData;
+
+function isStudent(data: RegisterData): data is StudentRegisterData {
     return data.role === "student" && "studentData" in data;
 }
 
-function isTeacher(data: any): data is TeacherRegisterData {
+function isTeacher(data: RegisterData): data is TeacherRegisterData {
     return data.role === "teacher" && "teacherData" in data;
 }
 
 export const register = httpMethod(async (req: Request, res: Response): Promise<void> => {
-    const reqData = await validateRegisterRequest(req);
+    const reqData = await validateRegisterRequest(req) as RegisterData;
     const existingUser = await User.findOne({ email: reqData.email });
     if (existingUser) {
         throw new HttpError(400, "Email Already Exists!");
     }
+
+    // Parse name into first and last name
+    const nameParts = reqData.name ? reqData.name.trim().split(' ') : ['', ''];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     const hashedPassword = await bcrypt.hash(reqData.password, 10);
-    const user = await User.create({ ...reqData, password: hashedPassword, role: reqData.role });
+    const user = await User.create({ 
+        ...reqData, 
+        password: hashedPassword, 
+        role: reqData.role,
+        name: {
+            first: firstName,
+            last: lastName
+        }
+    });
+
     // Role-specific creation
     if (isStudent(reqData)) {
         await Student.create({
@@ -56,12 +82,28 @@ export const register = httpMethod(async (req: Request, res: Response): Promise<
             ...reqData.studentData,
         });
     } else if (isTeacher(reqData)) {
+        // Extract only the teacher-specific fields
+        const { department, mobile, address, status, joiningDate, gender, degree, section } = reqData.teacherData;
         await Teacher.create({
             userId: user._id,
-            ...reqData.teacherData,
+            department,
+            mobile,
+            address,
+            status,
+            joiningDate,
+            gender,
+            degree,
+            section,
+            type: "teacher"
         });
     }
-    res.status(201).json({ user: { username: user.username, email: user.email }, message: "Signed Up Successfully !" })
+    res.status(201).json({ 
+        user: { 
+            name: user.name,
+            email: user.email 
+        }, 
+        message: "Signed Up Successfully !" 
+    });
 })
 
 export const login = httpMethod(async (req: Request, res: Response) => {

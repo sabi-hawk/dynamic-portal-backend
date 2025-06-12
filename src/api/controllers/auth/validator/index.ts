@@ -16,6 +16,7 @@ export const validateRegisterRequest = async (req: Request) => {
     email: yup.string().email("not a valid email").trim().lowercase().required("email is required"),
     password: yup.string().required("password is required"),
     role: yup.string().required("role is required"),
+    name: yup.string().required("name is required"),
   });
 
   // Validate base structure first
@@ -41,13 +42,14 @@ export const validateRegisterRequest = async (req: Request) => {
 
   if (baseData.role === "teacher") {
     const teacherSchema = yup.object({
-      department: yup.string().optional(),
+      department: yup.string().required("department is required"),
       mobile: yup.string().required("mobile is required"),
       address: yup.string().optional(),
       status: yup.string().oneOf(["active", "inactive"]).optional(),
-      joiningDate: yup.date().optional(),
-      gender: yup.string().oneOf(["Male", "Female", "Other"]).optional(),
-      degree: yup.string().oneOf(["Bachelors", "Masters", "PhD"]).optional(),
+      joiningDate: yup.date().required("joining date is required"),
+      gender: yup.string().oneOf(["Male", "Female", "Other"]).required("gender is required"),
+      degree: yup.string().oneOf(["Bachelors", "Masters", "PhD"]).required("degree is required"),
+      section: yup.string().oneOf(["A", "B", "C", "D", "E", "F"]).required("section is required"),
     });
 
     const teacherData = await teacherSchema.validate(req.body, { abortEarly: false });
