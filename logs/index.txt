@@ -162,3 +162,9 @@
 {"level":"debug","message":"Http Request | Complete: GET : /api/student/"}
 {"level":"debug","message":"Http Request | Start: POST : /api/auth/register"}
 {"level":"debug","message":"Http Request | Error: POST : /api/auth/register"}
+{"level":"debug","message":"Http Request | Start: GET : /api/teacher/"}
+{"level":"debug","message":"Http Request | Complete: GET : /api/teacher/"}
+{"level":"debug","message":"Http Request | Start: POST : /api/teacher/add"}
+{"level":"debug","message":"Http Request | Error: POST : /api/teacher/add"}
+{"level":"debug","message":"Http Request | Start: POST : /api/teacher/add"}
+{"level":"debug","message":"Http Request | Error: POST : /api/teacher/add"}
