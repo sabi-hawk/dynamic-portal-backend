@@ -10,6 +10,7 @@ const TeacherSchema = new Schema({
   joiningDate: { type: Date },
   gender: { type: String, enum: ["Male", "Female", "Other"] },
   degree: { type: String, enum: ["Bachelors", "Masters", "PhD"] },
+  section: { type: String, enum: ["A", "B", "C", "D", "E", "F"], default: "A" },
 });
 
 export type TeacherType = InferSchemaType<typeof TeacherSchema> & Document;

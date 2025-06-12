@@ -8,6 +8,7 @@ const studentSchema = new Schema({
   gender: { type: String, required: true },
   mobile: { type: String, required: true },
   admissionDate: { type: Date, required: true },
+  section: { type: String, enum: ["A", "B", "C", "D", "E", "F"], default: "A" },
   // ...any other student-specific fields
 });
 
