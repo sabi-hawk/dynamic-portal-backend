@@ -13,6 +13,11 @@ const TeacherSchema = new Schema({
   section: { type: String, enum: ["A", "B", "C", "D", "E", "F"], default: "A" },
 });
 
+// Remove any existing indexes
+TeacherSchema.indexes().forEach(index => {
+  TeacherSchema.index(index[0], { unique: false });
+});
+
 export type TeacherType = InferSchemaType<typeof TeacherSchema> & Document;
 const Teacher = model<TeacherType>("teacher", TeacherSchema);
 

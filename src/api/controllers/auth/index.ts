@@ -65,46 +65,56 @@ export const register = httpMethod(async (req: Request, res: Response): Promise<
     const lastName = nameParts.slice(1).join(' ') || '';
 
     const hashedPassword = await bcrypt.hash(reqData.password, 10);
-    const user = await User.create({ 
-        ...reqData, 
-        password: hashedPassword, 
-        role: reqData.role,
-        name: {
-            first: firstName,
-            last: lastName
-        }
-    });
+    
+    try {
+        // Create user first
+        const user = await User.create({ 
+            ...reqData, 
+            password: hashedPassword, 
+            role: reqData.role,
+            name: {
+                first: firstName,
+                last: lastName
+            }
+        });
 
-    // Role-specific creation
-    if (isStudent(reqData)) {
-        await Student.create({
-            userId: user._id,
-            ...reqData.studentData,
+        // Role-specific creation
+        if (isStudent(reqData)) {
+            await Student.create({
+                userId: user._id,
+                ...reqData.studentData,
+            });
+        } else if (isTeacher(reqData)) {
+            // Create teacher with all required fields
+            await Teacher.create({
+                userId: user._id,
+                department: reqData.teacherData.department,
+                mobile: reqData.teacherData.mobile,
+                address: reqData.teacherData.address,
+                status: reqData.teacherData.status || "active",
+                joiningDate: reqData.teacherData.joiningDate,
+                gender: reqData.teacherData.gender,
+                degree: reqData.teacherData.degree,
+                section: reqData.teacherData.section,
+                type: "teacher"
+            });
+        }
+
+        res.status(201).json({ 
+            user: { 
+                name: user.name,
+                email: user.email 
+            }, 
+            message: "Signed Up Successfully !" 
         });
-    } else if (isTeacher(reqData)) {
-        // Extract only the teacher-specific fields
-        const { department, mobile, address, status, joiningDate, gender, degree, section } = reqData.teacherData;
-        await Teacher.create({
-            userId: user._id,
-            department,
-            mobile,
-            address,
-            status,
-            joiningDate,
-            gender,
-            degree,
-            section,
-            type: "teacher"
-        });
+    } catch (error: any) {
+        // If anything fails, we should clean up the created user
+        if (error.code === 11000) {
+            throw new HttpError(400, "A teacher with this information already exists");
+        }
+        throw new HttpError(500, "Error creating user: " + error.message);
     }
-    res.status(201).json({ 
-        user: { 
-            name: user.name,
-            email: user.email 
-        }, 
-        message: "Signed Up Successfully !" 
-    });
-})
+});
 
 export const login = httpMethod(async (req: Request, res: Response) => {
     const reqData = await validateLoginRequest(req);
