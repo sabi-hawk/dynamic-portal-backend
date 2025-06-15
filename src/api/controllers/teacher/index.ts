@@ -3,10 +3,23 @@ import { httpMethod, HttpError } from "..";
 import User from "@models/User";
 import Teacher from "@models/Teacher";
 import bcrypt from "bcrypt";
+import CourseSchedule from "@models/CourseSchedule";
+import Course from "@models/Course";
 
 // Add new teacher
 export const addTeacher = httpMethod(async (req: Request, res: Response) => {
-  const { name, department, mobile, email, address, status, joiningDate, gender, degree, section } = req.body;
+  const {
+    name,
+    department,
+    mobile,
+    email,
+    address,
+    status,
+    joiningDate,
+    gender,
+    degree,
+    section,
+  } = req.body;
 
   const existing = await Teacher.findOne({ email });
   if (existing) {
@@ -31,14 +44,17 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
 
 export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
   const teachers = await Teacher.find()
-    .populate({ path: 'userId', select: 'email name' })
+    .populate({ path: "userId", select: "email name" })
     .sort({ createdAt: -1 });
 
-  const formattedTeachers = teachers.map(teacher => {
+  const formattedTeachers = teachers.map((teacher) => {
     const teacherObj = teacher.toObject();
 
     // Type assertion: tell TypeScript that userId is now of the expected populated type
-    const user = teacherObj.userId as { email?: string; name?: { first: string; last: string } };
+    const user = teacherObj.userId as {
+      email?: string;
+      name?: { first: string; last: string };
+    };
 
     return {
       ...teacherObj,
@@ -53,7 +69,7 @@ export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
 // Delete teacher
 export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  
+
   // Find the teacher first to get their userId
   const teacher = await Teacher.findById(id);
   if (!teacher) {
@@ -68,7 +84,9 @@ export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {
   // Delete the teacher
   await Teacher.findByIdAndDelete(id);
 
-  res.status(200).json({ message: "Teacher and associated user deleted successfully" });
+  res
+    .status(200)
+    .json({ message: "Teacher and associated user deleted successfully" });
 });
 
 // Update teacher
@@ -104,8 +122,57 @@ export const updateTeacher = httpMethod(async (req: Request, res: Response) => {
     { new: true }
   );
 
-  res.status(200).json({ 
-    message: "Teacher updated successfully", 
-    teacher: updatedTeacher 
+  res.status(200).json({
+    message: "Teacher updated successfully",
+    teacher: updatedTeacher,
   });
 });
+
+// Get teacher profile by user ID
+export const getTeacherByUserId = httpMethod(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const teacher = await Teacher.findOne({ userId }).populate(
+      "userId",
+      "name email"
+    );
+    if (!teacher) {
+      throw new HttpError(404, "Teacher not found");
+    }
+    res.status(200).json(teacher);
+  }
+);
+
+// Get teacher's courses and schedules
+export const getTeacherCoursesAndSchedules = httpMethod(
+  async (req: Request, res: Response) => {
+    const { teacherId } = req.params;
+
+    // Get all schedules for this teacher
+    const schedules = await CourseSchedule.find({ instructor: teacherId })
+      .populate("course", "courseCode courseName description status")
+      .sort({ "schedule.startTime": 1 });
+
+    res.status(200).json(schedules);
+  }
+);
+
+// Get teacher's today's schedules
+export const getTeacherTodaySchedules = httpMethod(
+  async (req: Request, res: Response) => {
+    const { teacherId } = req.params;
+
+    // Get current day of week
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+
+    // Get schedules for today
+    const todaySchedules = await CourseSchedule.find({
+      instructor: teacherId,
+      "schedule.daysOfWeek": today,
+    })
+      .populate("course", "courseCode courseName description status")
+      .sort({ "schedule.startTime": 1 });
+
+    res.status(200).json(todaySchedules);
+  }
+);

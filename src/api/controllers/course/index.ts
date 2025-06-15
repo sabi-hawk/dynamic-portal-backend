@@ -90,14 +90,6 @@ export const updateCourse = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
   const updateData = req.body;
 
-  // If instructor is being updated, verify the new instructor exists
-  if (updateData.instructor) {
-    const instructorExists = await Teacher.findById(updateData.instructor);
-    if (!instructorExists) {
-      throw new HttpError(404, "Instructor not found");
-    }
-  }
-
   // If course code is being updated, check for duplicates
   if (updateData.courseCode) {
     const existingCourse = await Course.findOne({
@@ -109,37 +101,81 @@ export const updateCourse = httpMethod(async (req: Request, res: Response) => {
     }
   }
 
+  // Update the course (only course-level fields)
   const updatedCourse = await Course.findByIdAndUpdate(
     id,
-    { ...updateData, updatedAt: Date.now() },
-    { new: true }
-  ).populate({
-    path: "instructor",
-    select: "userId department",
-    populate: {
-      path: "userId",
-      select: "name email",
+    {
+      courseCode: updateData.courseCode,
+      courseName: updateData.courseName,
+      description: updateData.description,
+      status: updateData.status,
+      updatedAt: Date.now(),
     },
-  });
+    { new: true }
+  );
 
   if (!updatedCourse) {
     throw new HttpError(404, "Course not found");
   }
 
+  // If schedules are present, replace all schedules for this course
+  let createdSchedules = [];
+  if (Array.isArray(updateData.schedules)) {
+    // Delete all existing schedules for this course
+    await CourseSchedule.deleteMany({ course: id });
+    // Create new schedules
+    for (const sched of updateData.schedules) {
+      // Validate instructor
+      const instructorExists = await Teacher.findById(sched.instructor);
+      if (!instructorExists) {
+        throw new HttpError(
+          404,
+          `Instructor not found for schedule: ${sched.instructor}`
+        );
+      }
+      // Create CourseSchedule
+      const courseSchedule = await CourseSchedule.create({
+        course: id,
+        instructor: sched.instructor,
+        section: sched.section,
+        schedule: {
+          startTime: sched.schedule.startTime,
+          endTime: sched.schedule.endTime,
+          daysOfWeek: sched.schedule.daysOfWeek,
+          duration: 0, // will be set by pre-save hook
+        },
+        status: "active",
+      });
+      createdSchedules.push(courseSchedule);
+    }
+  }
+
   res.status(200).json({
     message: "Course updated successfully",
     course: updatedCourse,
+    schedules: createdSchedules,
   });
 });
 
 // Delete course
 export const deleteCourse = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const course = await Course.findByIdAndDelete(id);
   if (!course) {
     throw new HttpError(404, "Course not found");
   }
-
-  res.status(200).json({ message: "Course deleted successfully" });
+  // Cascade delete schedules
+  await CourseSchedule.deleteMany({ course: id });
+  res
+    .status(200)
+    .json({ message: "Course and related schedules deleted successfully" });
 });
+
+// Get all schedules for a course
+export const getCourseSchedules = httpMethod(
+  async (req: Request, res: Response) => {
+    const { courseId } = req.params;
+    const schedules = await CourseSchedule.find({ course: courseId });
+    res.status(200).json(schedules);
+  }
+);

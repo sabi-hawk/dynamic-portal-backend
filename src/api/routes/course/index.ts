@@ -8,6 +8,10 @@ courseRouter.get("/", courseController.getCourses);
 courseRouter.get("/:id", courseController.getCourseById);
 courseRouter.put("/:id", courseController.updateCourse);
 courseRouter.delete("/:id", courseController.deleteCourse);
-courseRouter.get("/instructor/:instructorId", courseController.getCoursesByInstructor);
+courseRouter.get(
+  "/instructor/:instructorId",
+  courseController.getCoursesByInstructor
+);
+courseRouter.get("/:courseId/schedules", courseController.getCourseSchedules);
 
-export default courseRouter; 
+export default courseRouter;
