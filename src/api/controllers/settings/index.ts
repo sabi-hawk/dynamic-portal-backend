@@ -3,6 +3,7 @@ import PortalSettings, {
   IPortalSettings,
 } from "../../../models/PortalSettings";
 import { httpMethod } from "..";
+import featuresConfig from "@config/portal/features.json";
 
 export const getPortalSettings = httpMethod(
   async (req: Request, res: Response): Promise<void> => {
@@ -45,12 +46,13 @@ export const updatePortalSettings = httpMethod(
 
       // Handle logo upload
       if (req.file) {
-        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+        const baseUrl =
+          process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
         updateData.logoUrl = `${baseUrl}/uploads/logos/${req.file.filename}`;
       }
 
       // Parse permissions if they are sent as a string
-      if (typeof updateData.portalPermissions === 'string') {
+      if (typeof updateData.portalPermissions === "string") {
         updateData.portalPermissions = JSON.parse(updateData.portalPermissions);
       }
 
@@ -69,5 +71,29 @@ export const updatePortalSettings = httpMethod(
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
+  }
+);
+
+export const getPortalFeatures = httpMethod(
+  async (req: Request, res: Response) => {
+    const { instituteType = "school", portal } = req.query as Record<
+      string,
+      string
+    >;
+    const type = instituteType.toLowerCase();
+
+    const dataForType = (featuresConfig as any)[type];
+    if (!dataForType) {
+      res.status(400).json({ message: "Invalid institute type" });
+      return;
+    }
+
+    if (portal) {
+      const list = dataForType[portal] || [];
+      res.json(list);
+      return;
+    }
+
+    res.json(dataForType);
   }
 );

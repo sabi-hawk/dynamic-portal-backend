@@ -1,17 +1,85 @@
 {
   "school": {
-    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+    "admin": [
+      "dashboard",
+      "attendance",
+      "assignments",
+      "grades",
+      "schedule",
+      "communication",
+      "reports",
+      "profile"
+    ],
+    "teacher": [
+      "dashboard",
+      "lectures",
+      "attendance",
+      "grade",
+      "course-material",
+      "settings"
+    ],
+    "student": ["dashboard", "courses", "assignments", "grade", "settings"]
   },
   "college": {
-    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+    "admin": [
+      "dashboard",
+      "attendance",
+      "assignments",
+      "grades",
+      "announcements",
+      "reports",
+      "profile"
+    ],
+    "teacher": [
+      "dashboard",
+      "lectures",
+      "assignments",
+      "attendance",
+      "grade",
+      "announcements",
+      "settings"
+    ],
+    "student": [
+      "dashboard",
+      "courses",
+      "assignments",
+      "grade",
+      "course-material",
+      "settings"
+    ]
   },
   "university": {
-    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
-    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+    "admin": [
+      "dashboard",
+      "attendance",
+      "assignments",
+      "grades",
+      "schedule",
+      "communication",
+      "reports",
+      "profile"
+    ],
+    "teacher": [
+      "dashboard",
+      "lectures",
+      "assignments",
+      "attendance",
+      "grade",
+      "leaves",
+      "course-material",
+      "submission",
+      "settings"
+    ],
+    "student": [
+      "dashboard",
+      "courses",
+      "assignments",
+      "announcements",
+      "attendance",
+      "grade",
+      "leaves",
+      "submission",
+      "settings"
+    ]
   }
 }
