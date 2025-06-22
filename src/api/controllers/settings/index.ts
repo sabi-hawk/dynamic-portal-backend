@@ -13,11 +13,11 @@ export const getPortalSettings = httpMethod(
         return;
       }
 
-      let settings = await PortalSettings.findOne({ userId });
+      const settings = await PortalSettings.findOne({ userId });
 
       if (!settings) {
-        // Create default settings if none exist
-        settings = await PortalSettings.create({ userId });
+        res.status(404).json({ success: false, message: "Settings not found" });
+        return;
       }
 
       res.status(200).json({ success: true, data: settings });
@@ -41,26 +41,18 @@ export const updatePortalSettings = httpMethod(
         return;
       }
 
-      const {
-        instituteName,
-        primaryColor,
-        secondaryColor,
-        logoUrl,
-        address,
-        contactEmail,
-        contactPhone,
-      } = req.body;
+      const updateData = { ...req.body };
 
-      const updateData: Partial<IPortalSettings> = {};
+      // Handle logo upload
+      if (req.file) {
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+        updateData.logoUrl = `${baseUrl}/uploads/logos/${req.file.filename}`;
+      }
 
-      if (instituteName !== undefined) updateData.instituteName = instituteName;
-      if (primaryColor !== undefined) updateData.primaryColor = primaryColor;
-      if (secondaryColor !== undefined)
-        updateData.secondaryColor = secondaryColor;
-      if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
-      if (address !== undefined) updateData.address = address;
-      if (contactEmail !== undefined) updateData.contactEmail = contactEmail;
-      if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
+      // Parse permissions if they are sent as a string
+      if (typeof updateData.portalPermissions === 'string') {
+        updateData.portalPermissions = JSON.parse(updateData.portalPermissions);
+      }
 
       const settings = await PortalSettings.findOneAndUpdate(
         { userId },

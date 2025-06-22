@@ -1,0 +1,17 @@
+{
+  "school": {
+    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+  },
+  "college": {
+    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+  },
+  "university": {
+    "admin": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "teacher": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "reports", "profile"],
+    "student": ["dashboard", "attendance", "assignments", "grades", "schedule", "communication", "profile"]
+  }
+}
