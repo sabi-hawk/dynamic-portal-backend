@@ -154,11 +154,10 @@ export const getTeacherByUserId = httpMethod(
 // Get teacher's courses and schedules
 export const getTeacherCoursesAndSchedules = httpMethod(
   async (req: Request, res: Response) => {
-    const { teacherId } = req.params;
-    const userId = req.user?.id;
+    const teacherId = req.user?.id;
 
     // First verify the teacher belongs to this institute
-    const teacher = await Teacher.findOne({ _id: teacherId, instituteId: userId });
+    const teacher = await Teacher.findOne({ _id: teacherId});
     if (!teacher) {
       throw new HttpError(404, "Teacher not found or you don't have permission to access");
     }
@@ -175,11 +174,10 @@ export const getTeacherCoursesAndSchedules = httpMethod(
 // Get teacher's today's schedules
 export const getTeacherTodaySchedules = httpMethod(
   async (req: Request, res: Response) => {
-    const { teacherId } = req.params;
-    const userId = req.user?.id;
+    const teacherId = req.user?.id;
 
     // First verify the teacher belongs to this institute
-    const teacher = await Teacher.findOne({ _id: teacherId, instituteId: userId });
+    const teacher = await Teacher.findOne({ _id: teacherId });
     if (!teacher) {
       throw new HttpError(404, "Teacher not found or you don't have permission to access");
     }

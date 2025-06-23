@@ -141,6 +141,7 @@ export const login = httpMethod(async (req: Request, res: Response) => {
         _id: existingUser._id,
         email: existingUser.email,
         username: existingUser.username,
+        name: existingUser.name,
         role: existingUser.role,
     };
     const session = await createSession(existingUser)

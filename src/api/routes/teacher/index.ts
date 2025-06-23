@@ -13,11 +13,11 @@ teacherRouter.put("/:id", teacherController.updateTeacher);
 teacherRouter.delete("/:id", teacherController.deleteTeacher);
 teacherRouter.get("/user/:userId", teacherController.getTeacherByUserId);
 teacherRouter.get(
-  "/:teacherId/courses",
+  "/courses",
   teacherController.getTeacherCoursesAndSchedules
 );
 teacherRouter.get(
-  "/:teacherId/today",
+  "/today",
   teacherController.getTeacherTodaySchedules
 );
 
