@@ -13,4 +13,9 @@ studentRouter.get("/", studentController.getStudents);
 studentRouter.put("/:id", studentController.updateStudent);
 studentRouter.delete("/:id", studentController.deleteStudent);
 
+// New routes for student dashboard
+studentRouter.get("/profile", studentController.getStudentByUserId);
+studentRouter.get("/schedule", studentController.getStudentSchedule);
+studentRouter.get("/today", studentController.getStudentTodaySchedules);
+
 export default studentRouter;
