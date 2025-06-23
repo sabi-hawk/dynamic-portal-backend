@@ -17,5 +17,9 @@ studentRouter.delete("/:id", studentController.deleteStudent);
 studentRouter.get("/profile", studentController.getStudentByUserId);
 studentRouter.get("/schedule", studentController.getStudentSchedule);
 studentRouter.get("/today", studentController.getStudentTodaySchedules);
+studentRouter.get(
+  "/today-with-instructor",
+  studentController.getStudentTodaySchedulesWithInstructor
+);
 
 export default studentRouter;

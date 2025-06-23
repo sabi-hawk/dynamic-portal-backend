@@ -176,3 +176,39 @@ export const getStudentTodaySchedules = httpMethod(
     res.status(200).json(todaySchedules);
   }
 );
+
+// Get student's today's schedules with enriched instructor data
+export const getStudentTodaySchedulesWithInstructor = httpMethod(
+  async (req: Request, res: Response) => {
+    const studentId = req.user?.id;
+
+    // First verify the student belongs to this institute and get their section
+    const student = await Student.findOne({ _id: studentId });
+    if (!student) {
+      throw new HttpError(
+        404,
+        "Student not found or you don't have permission to access"
+      );
+    }
+
+    // Get current day of week
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+
+    // Get schedules for today for this student's section with nested population
+    const todaySchedules = await CourseSchedule.find({
+      section: student.section,
+      "schedule.daysOfWeek": today,
+    })
+      .populate("course", "courseCode courseName description status")
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "userId",
+          select: "username name email",
+        },
+      })
+      .sort({ "schedule.startTime": 1 });
+
+    res.status(200).json(todaySchedules);
+  }
+);
