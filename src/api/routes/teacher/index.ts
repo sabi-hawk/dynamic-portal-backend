@@ -1,7 +1,11 @@
 import { Router } from "express";
 import * as teacherController from "@controllers/teacher";
+import { authenticateJwt } from "@middlewares/auth";
 
 const teacherRouter = Router();
+
+// Secure all teacher routes
+teacherRouter.use(authenticateJwt);
 
 teacherRouter.post("/add", teacherController.addTeacher);
 teacherRouter.get("/", teacherController.getTeachers);

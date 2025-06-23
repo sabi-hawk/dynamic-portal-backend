@@ -1,7 +1,11 @@
 import { Router } from "express";
 import * as courseController from "@controllers/course";
+import { authenticateJwt } from "@middlewares/auth";
 
 const courseRouter = Router();
+
+// Secure all course routes
+courseRouter.use(authenticateJwt);
 
 courseRouter.post("/add", courseController.addCourse);
 courseRouter.get("/", courseController.getCourses);

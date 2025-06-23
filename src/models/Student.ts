@@ -3,6 +3,7 @@ import mongoose, { Schema } from "mongoose";
 
 const studentSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  instituteId: { type: Schema.Types.ObjectId, ref: "user", required: true },
   rollNo: { type: String, required: true, unique: true },
   department: { type: String, required: true },
   gender: { type: String, required: true },

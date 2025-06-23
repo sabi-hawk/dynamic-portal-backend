@@ -2,6 +2,7 @@ import { Schema, model, InferSchemaType, Document } from "mongoose";
 
 const TeacherSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  instituteId: { type: Schema.Types.ObjectId, ref: "user", required: true },
   type: { type: String, default: "teacher" },
   department: { type: String, required: true },
   mobile: { type: String, required: true },

@@ -3,6 +3,8 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import * as materialController from "@controllers/courseMaterial";
+import { uploadMaterial } from "@middlewares/fileUploader";
+import { authenticateJwt } from "@middlewares/auth";
 
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
@@ -19,7 +21,10 @@ const upload = multer({ storage });
 
 const router = Router();
 
-router.post("/", upload.single("file"), materialController.uploadMaterial);
+// Secure all course material routes
+router.use(authenticateJwt);
+
+router.post("/", uploadMaterial.single("file"), materialController.uploadMaterial);
 router.get("/", materialController.listMaterials);
 router.delete("/:id", materialController.deleteMaterial);
 

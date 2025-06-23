@@ -15,7 +15,9 @@
       "@controllers/*": ["src/api/controllers/*"],
       "@routes/*": ["src/api/routes/*"],
       "@middleware/*": ["src/api/middleware/*"],
-      "@public/*": ["public/*"] // Add this for the public directory
+      "@public/*": ["public/*"],
+      "@middlewares/*": ["src/api/middlewares/*"],
+      "@middlewares/*": ["src/api/middlewares/*"]
     }
   },
   "include": ["src/**/*.ts"], // Include all TypeScript files in src

@@ -59,6 +59,11 @@ export const register = httpMethod(async (req: Request, res: Response): Promise<
         throw new HttpError(400, "Email Already Exists!");
     }
 
+    // For student/teacher registration, ensure user is authenticated
+    if ((reqData.role === 'student' || reqData.role === 'teacher') && !req.user?.id) {
+        throw new HttpError(401, "Authentication required for student/teacher registration");
+    }
+
     // Parse name into first and last name
     const nameParts = reqData.name ? reqData.name.trim().split(' ') : ['', ''];
     const firstName = nameParts[0] || '';
@@ -82,20 +87,23 @@ export const register = httpMethod(async (req: Request, res: Response): Promise<
         if (isStudent(reqData)) {
             await Student.create({
                 userId: user._id,
+                instituteId: req.user!.id, // Safe to use ! here since we validated above
                 ...reqData.studentData,
             });
         } else if (isTeacher(reqData)) {
-            // Create teacher with all required fields
+            // Extract only the teacher-specific fields
+            const { department, mobile, address, status, joiningDate, gender, degree, section } = reqData.teacherData;
             await Teacher.create({
                 userId: user._id,
-                department: reqData.teacherData.department,
-                mobile: reqData.teacherData.mobile,
-                address: reqData.teacherData.address,
-                status: reqData.teacherData.status || "active",
-                joiningDate: reqData.teacherData.joiningDate,
-                gender: reqData.teacherData.gender,
-                degree: reqData.teacherData.degree,
-                section: reqData.teacherData.section,
+                instituteId: req.user!.id, // Safe to use ! here since we validated above
+                department,
+                mobile,
+                address,
+                status,
+                joiningDate,
+                gender,
+                degree,
+                section,
                 type: "teacher"
             });
         }

@@ -7,9 +7,13 @@ import CourseSchedule from "@models/CourseSchedule";
 // Add new course
 export const addCourse = httpMethod(async (req: Request, res: Response) => {
   const { courseCode, courseName, description, status, schedules } = req.body;
+  const userId = req.user?.id;
 
   // Check if course code already exists
-  const existingCourse = await Course.findOne({ courseCode });
+  const existingCourse = await Course.findOne({
+    courseCode,
+    instituteId: userId,
+  });
   if (existingCourse) {
     throw new HttpError(400, "Course with this code already exists");
   }
@@ -20,6 +24,7 @@ export const addCourse = httpMethod(async (req: Request, res: Response) => {
     courseName,
     description,
     status: status || "active",
+    instituteId: userId,
   });
 
   // Create schedules if provided
@@ -59,15 +64,19 @@ export const addCourse = httpMethod(async (req: Request, res: Response) => {
 });
 
 // Get all courses
-export const getCourses = httpMethod(async (_req: Request, res: Response) => {
-  const courses = await Course.find().sort({ createdAt: -1 });
+export const getCourses = httpMethod(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const courses = await Course.find({ instituteId: userId }).sort({
+    createdAt: -1,
+  });
   res.status(200).json(courses);
 });
 
 // Get course by ID
 export const getCourseById = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const course = await Course.findById(id);
+  const userId = req.user?.id;
+  const course = await Course.findOne({ _id: id, instituteId: userId });
   if (!course) {
     throw new HttpError(404, "Course not found");
   }
@@ -88,12 +97,14 @@ export const getCoursesByInstructor = httpMethod(
 // Update course
 export const updateCourse = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.id;
   const updateData = req.body;
 
   // If course code is being updated, check for duplicates
   if (updateData.courseCode) {
     const existingCourse = await Course.findOne({
       courseCode: updateData.courseCode,
+      instituteId: userId,
       _id: { $ne: id },
     });
     if (existingCourse) {
@@ -102,8 +113,8 @@ export const updateCourse = httpMethod(async (req: Request, res: Response) => {
   }
 
   // Update the course (only course-level fields)
-  const updatedCourse = await Course.findByIdAndUpdate(
-    id,
+  const updatedCourse = await Course.findOneAndUpdate(
+    { _id: id, instituteId: userId },
     {
       courseCode: updateData.courseCode,
       courseName: updateData.courseName,
@@ -160,7 +171,8 @@ export const updateCourse = httpMethod(async (req: Request, res: Response) => {
 // Delete course
 export const deleteCourse = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const course = await Course.findByIdAndDelete(id);
+  const userId = req.user?.id;
+  const course = await Course.findOneAndDelete({ _id: id, instituteId: userId });
   if (!course) {
     throw new HttpError(404, "Course not found");
   }
@@ -175,6 +187,17 @@ export const deleteCourse = httpMethod(async (req: Request, res: Response) => {
 export const getCourseSchedules = httpMethod(
   async (req: Request, res: Response) => {
     const { courseId } = req.params;
+    const userId = req.user?.id;
+
+    // First, verify the course belongs to the institute
+    const course = await Course.findOne({ _id: courseId, instituteId: userId });
+    if (!course) {
+      throw new HttpError(
+        404,
+        "Course not found or you don't have permission to access it."
+      );
+    }
+
     const schedules = await CourseSchedule.find({ course: courseId });
     res.status(200).json(schedules);
   }
