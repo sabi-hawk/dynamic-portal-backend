@@ -13,6 +13,7 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
     name,
     department,
     mobile,
+    emergencyContact,
     email,
     address,
     status,
@@ -31,6 +32,7 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
     name,
     department,
     mobile,
+    emergencyContact,
     email,
     address,
     status,
@@ -136,16 +138,19 @@ export const updateTeacher = httpMethod(async (req: Request, res: Response) => {
 // Get teacher profile by user ID
 export const getTeacherByUserId = httpMethod(
   async (req: Request, res: Response) => {
-    const { userId: teacherUserId } = req.params;
-    const instituteId = req.user?.id;
-    
-    const teacher = await Teacher.findOne({ 
-      userId: teacherUserId, 
-      instituteId: instituteId 
-    }).populate("userId", "name email");
-    
+    const teacherId = req.user?.id;
+
+    // First verify the teacher belongs to this institute
+    const teacher = await Teacher.findOne({ _id: teacherId }).populate(
+      "userId",
+      "name email"
+    );
+
     if (!teacher) {
-      throw new HttpError(404, "Teacher not found");
+      throw new HttpError(
+        404,
+        "Teacher not found or you don't have permission to access"
+      );
     }
     res.status(200).json(teacher);
   }
@@ -157,9 +162,12 @@ export const getTeacherCoursesAndSchedules = httpMethod(
     const teacherId = req.user?.id;
 
     // First verify the teacher belongs to this institute
-    const teacher = await Teacher.findOne({ _id: teacherId});
+    const teacher = await Teacher.findOne({ _id: teacherId });
     if (!teacher) {
-      throw new HttpError(404, "Teacher not found or you don't have permission to access");
+      throw new HttpError(
+        404,
+        "Teacher not found or you don't have permission to access"
+      );
     }
 
     // Get all schedules for this teacher
@@ -179,7 +187,10 @@ export const getTeacherTodaySchedules = httpMethod(
     // First verify the teacher belongs to this institute
     const teacher = await Teacher.findOne({ _id: teacherId });
     if (!teacher) {
-      throw new HttpError(404, "Teacher not found or you don't have permission to access");
+      throw new HttpError(
+        404,
+        "Teacher not found or you don't have permission to access"
+      );
     }
 
     // Get current day of week

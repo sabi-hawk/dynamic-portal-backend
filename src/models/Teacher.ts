@@ -6,6 +6,7 @@ const TeacherSchema = new Schema({
   type: { type: String, default: "teacher" },
   department: { type: String, required: true },
   mobile: { type: String, required: true },
+  emergencyContact: { type: String },
   address: { type: String },
   status: { type: String, enum: ["active", "inactive"], default: "active" },
   joiningDate: { type: Date },
@@ -15,7 +16,7 @@ const TeacherSchema = new Schema({
 });
 
 // Remove any existing indexes
-TeacherSchema.indexes().forEach(index => {
+TeacherSchema.indexes().forEach((index) => {
   TeacherSchema.index(index[0], { unique: false });
 });
 
