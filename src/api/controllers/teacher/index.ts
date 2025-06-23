@@ -8,6 +8,7 @@ import Course from "@models/Course";
 
 // Add new teacher
 export const addTeacher = httpMethod(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
   const {
     name,
     department,
@@ -21,7 +22,7 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
     section,
   } = req.body;
 
-  const existing = await Teacher.findOne({ email });
+  const existing = await Teacher.findOne({ email, instituteId: userId });
   if (existing) {
     throw new HttpError(400, "Teacher with this email already exists");
   }
@@ -37,13 +38,15 @@ export const addTeacher = httpMethod(async (req: Request, res: Response) => {
     gender,
     degree,
     section,
+    instituteId: userId,
   });
 
   res.status(201).json({ message: "Teacher added successfully", teacher });
 });
 
-export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
-  const teachers = await Teacher.find()
+export const getTeachers = httpMethod(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const teachers = await Teacher.find({ instituteId: userId })
     .populate({ path: "userId", select: "email name" })
     .sort({ createdAt: -1 });
 
@@ -69,9 +72,10 @@ export const getTeachers = httpMethod(async (_req: Request, res: Response) => {
 // Delete teacher
 export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.id;
 
-  // Find the teacher first to get their userId
-  const teacher = await Teacher.findById(id);
+  // Find the teacher first to get their userId, ensuring it belongs to this institute
+  const teacher = await Teacher.findOne({ _id: id, instituteId: userId });
   if (!teacher) {
     throw new HttpError(404, "Teacher not found");
   }
@@ -92,10 +96,11 @@ export const deleteTeacher = httpMethod(async (req: Request, res: Response) => {
 // Update teacher
 export const updateTeacher = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.id;
   const updateData = req.body;
 
-  // Find the teacher first
-  const teacher = await Teacher.findById(id);
+  // Find the teacher first, ensuring it belongs to this institute
+  const teacher = await Teacher.findOne({ _id: id, instituteId: userId });
   if (!teacher) {
     throw new HttpError(404, "Teacher not found");
   }
@@ -131,11 +136,14 @@ export const updateTeacher = httpMethod(async (req: Request, res: Response) => {
 // Get teacher profile by user ID
 export const getTeacherByUserId = httpMethod(
   async (req: Request, res: Response) => {
-    const { userId } = req.params;
-    const teacher = await Teacher.findOne({ userId }).populate(
-      "userId",
-      "name email"
-    );
+    const { userId: teacherUserId } = req.params;
+    const instituteId = req.user?.id;
+    
+    const teacher = await Teacher.findOne({ 
+      userId: teacherUserId, 
+      instituteId: instituteId 
+    }).populate("userId", "name email");
+    
     if (!teacher) {
       throw new HttpError(404, "Teacher not found");
     }
@@ -147,6 +155,13 @@ export const getTeacherByUserId = httpMethod(
 export const getTeacherCoursesAndSchedules = httpMethod(
   async (req: Request, res: Response) => {
     const { teacherId } = req.params;
+    const userId = req.user?.id;
+
+    // First verify the teacher belongs to this institute
+    const teacher = await Teacher.findOne({ _id: teacherId, instituteId: userId });
+    if (!teacher) {
+      throw new HttpError(404, "Teacher not found or you don't have permission to access");
+    }
 
     // Get all schedules for this teacher
     const schedules = await CourseSchedule.find({ instructor: teacherId })
@@ -161,6 +176,13 @@ export const getTeacherCoursesAndSchedules = httpMethod(
 export const getTeacherTodaySchedules = httpMethod(
   async (req: Request, res: Response) => {
     const { teacherId } = req.params;
+    const userId = req.user?.id;
+
+    // First verify the teacher belongs to this institute
+    const teacher = await Teacher.findOne({ _id: teacherId, instituteId: userId });
+    if (!teacher) {
+      throw new HttpError(404, "Teacher not found or you don't have permission to access");
+    }
 
     // Get current day of week
     const today = new Date().toLocaleDateString("en-US", { weekday: "long" });

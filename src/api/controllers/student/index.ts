@@ -7,18 +7,22 @@ import bcrypt from "bcrypt";
 
 // Add new student
 export const addStudent = httpMethod(async (req: Request, res: Response) => {
-  // Count existing students to determine the next roll number
-  const count = await Student.countDocuments();
+  const userId = req.user?.id;
+  
+  // Count existing students in this institute to determine the next roll number
+  const count = await Student.countDocuments({ instituteId: userId });
   const newStudent = await Student.create({
     ...req.body,
+    instituteId: userId,
     rollNo: count + 1,
   });
   res.status(201).json({ message: "Student added successfully", student: newStudent });
 });
 
 // Get all students
-export const getStudents = httpMethod(async (_req: Request, res: Response) => {
-  const students = await Student.find()
+export const getStudents = httpMethod(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const students = await Student.find({ instituteId: userId })
     .populate({ path: 'userId', select: 'email name' })
     .sort({ createdAt: -1 });
 
@@ -38,8 +42,10 @@ export const getStudents = httpMethod(async (_req: Request, res: Response) => {
 // Delete student
 export const deleteStudent = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
-  // Find the student first to get their userId
-  const student = await Student.findById(id);
+  const userId = req.user?.id;
+  
+  // Find the student first to get their userId, ensuring it belongs to this institute
+  const student = await Student.findOne({ _id: id, instituteId: userId });
   if (!student) {
     throw new HttpError(404, "Student not found");
   }
@@ -55,9 +61,11 @@ export const deleteStudent = httpMethod(async (req: Request, res: Response) => {
 // Update student
 export const updateStudent = httpMethod(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.id;
   const updateData = req.body;
-  // Find the student first
-  const student = await Student.findById(id);
+  
+  // Find the student first, ensuring it belongs to this institute
+  const student = await Student.findOne({ _id: id, instituteId: userId });
   if (!student) {
     throw new HttpError(404, "Student not found");
   }
