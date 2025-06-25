@@ -1,7 +1,9 @@
 // routes/studentRouter.ts
 import express from "express";
 import * as studentController from "@controllers/student";
+import * as submissionController from "@controllers/submission";
 import { authenticateJwt } from "@middlewares/auth";
+import { uploadSubmission } from "@middlewares/fileUploader";
 
 const studentRouter = express.Router();
 
@@ -22,6 +24,18 @@ studentRouter.get(
   studentController.getStudentTodaySchedulesWithInstructor
 );
 studentRouter.get("/courses", studentController.getStudentCourses);
+
+// Submission routes
+studentRouter.get("/submissions", submissionController.listStudentSubmissions);
+studentRouter.post(
+  "/submission/:id/upload",
+  uploadSubmission.single("file"),
+  submissionController.uploadStudentSubmission
+);
+studentRouter.get(
+  "/submission/:id/upload",
+  submissionController.getOwnSubmissionUpload
+);
 
 // Course materials for a specific course and the student's section
 studentRouter.get("/materials", studentController.getStudentCourseMaterials);

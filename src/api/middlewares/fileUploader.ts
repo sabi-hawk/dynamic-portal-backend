@@ -19,4 +19,7 @@ const createStorage = (destinationPath) => {
 
 export const uploadLogo = multer({ storage: createStorage("logos") });
 export const uploadMaterial = multer({ storage: createStorage("materials") });
-// Add other upload types as needed 
+export const uploadSubmission = multer({
+  storage: createStorage("submissions"),
+});
+// Add other upload types as needed
