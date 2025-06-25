@@ -15,10 +15,18 @@
       "lectures",
       "attendance",
       "grade",
+      "time-table",
       "course-material",
       "settings"
     ],
-    "student": ["dashboard", "courses", "assignments", "grade", "settings"]
+    "student": [
+      "dashboard",
+      "courses",
+      "assignments",
+      "grade",
+      "time-table",
+      "settings"
+    ]
   },
   "college": {
     "admin": [
@@ -33,17 +41,19 @@
     "teacher": [
       "dashboard",
       "lectures",
-      "assignments",
+      "course-material",
       "attendance",
       "grade",
+      "time-table",
       "announcements",
       "settings"
     ],
     "student": [
       "dashboard",
       "courses",
-      "assignments",
       "grade",
+      "time-table",
+      "attendance",
       "course-material",
       "settings"
     ]
@@ -66,6 +76,8 @@
       "attendance",
       "grade",
       "leaves",
+      "profile",
+      "time-table",
       "course-material",
       "submission",
       "settings"
@@ -73,11 +85,13 @@
     "student": [
       "dashboard",
       "courses",
-      "assignments",
       "announcements",
       "attendance",
       "grade",
       "leaves",
+      "profile",
+      "time-table",
+      "course-material",
       "submission",
       "settings"
     ]

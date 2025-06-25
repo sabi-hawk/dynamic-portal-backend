@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Student from "@models/Student";
 import User from "@models/User";
 import CourseSchedule from "@models/CourseSchedule";
+import CourseMaterial from "@models/CourseMaterial";
 import { httpMethod, HttpError } from "..";
 import bcrypt from "bcrypt";
 
@@ -210,5 +211,104 @@ export const getStudentTodaySchedulesWithInstructor = httpMethod(
       .sort({ "schedule.startTime": 1 });
 
     res.status(200).json(todaySchedules);
+  }
+);
+
+// Get student's courses (unique courses for their section)
+export const getStudentCourses = httpMethod(
+  async (req: Request, res: Response) => {
+    const studentId = req.user?.id;
+    console.log("Getting courses for student ID:", studentId);
+
+    // First verify the student belongs to this institute and get their section
+    const student = await Student.findOne({ _id: studentId });
+    if (!student) {
+      throw new HttpError(
+        404,
+        "Student not found or you don't have permission to access"
+      );
+    }
+    console.log("Found student with section:", student.section);
+
+    // Get all schedules for this student's section and populate course data
+    const schedules = await CourseSchedule.find({
+      section: student.section,
+      status: "active",
+    })
+      .populate("course", "courseCode courseName description status")
+      .sort({ "course.courseName": 1 });
+
+    console.log("Found schedules:", schedules.length);
+
+    // Extract unique courses from schedules
+    const uniqueCourses = schedules.reduce((acc: any[], schedule: any) => {
+      const courseId = schedule.course._id.toString();
+      const existingCourse = acc.find((c) => c._id === courseId);
+
+      if (!existingCourse) {
+        acc.push({
+          _id: schedule.course._id,
+          courseCode: schedule.course.courseCode,
+          courseName: schedule.course.courseName,
+          description: schedule.course.description,
+          status: schedule.course.status,
+          section: student.section,
+        });
+      }
+
+      return acc;
+    }, []);
+
+    console.log("Unique courses found:", uniqueCourses.length);
+    res.status(200).json(uniqueCourses);
+  }
+);
+
+// Get course materials for a student filtered by course and section
+export const getStudentCourseMaterials = httpMethod(
+  async (req: Request, res: Response) => {
+    const studentId = req.user?.id;
+    const { courseId } = req.query;
+
+    if (!courseId) {
+      throw new HttpError(400, "courseId query param is required");
+    }
+
+    // Fetch student to identify their section
+    const student = await Student.findOne({ _id: studentId });
+    if (!student) {
+      throw new HttpError(
+        404,
+        "Student not found or you don't have permission to access"
+      );
+    }
+
+    // Find schedules that match this student's section and the requested course
+    const schedules = await CourseSchedule.find({
+      section: student.section,
+      course: courseId,
+      status: "active",
+    }).select("_id");
+
+    const scheduleIds = schedules.map((s) => s._id);
+
+    // No schedules -> empty list
+    if (scheduleIds.length === 0) {
+      res.status(200).json([]);
+      return;
+    }
+
+    // Find materials belonging to those schedules
+    const materials = await CourseMaterial.find({
+      courseSchedule: { $in: scheduleIds },
+    })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "courseSchedule",
+        select: "section course",
+        populate: { path: "course", select: "courseCode courseName" },
+      });
+
+    res.status(200).json(materials);
   }
 );

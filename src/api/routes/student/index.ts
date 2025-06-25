@@ -21,5 +21,9 @@ studentRouter.get(
   "/today-with-instructor",
   studentController.getStudentTodaySchedulesWithInstructor
 );
+studentRouter.get("/courses", studentController.getStudentCourses);
+
+// Course materials for a specific course and the student's section
+studentRouter.get("/materials", studentController.getStudentCourseMaterials);
 
 export default studentRouter;
