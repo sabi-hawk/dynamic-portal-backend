@@ -8,6 +8,7 @@ import User, { UserType } from "@models/User";
 import Session from "@models/Session";
 import Student from "@models/Student";
 import Teacher from "@models/Teacher";
+import PortalSettings from "@models/PortalSettings";
 
 type BaseRegisterData = {
     role: string;
@@ -145,7 +146,20 @@ export const login = httpMethod(async (req: Request, res: Response) => {
         role: existingUser.role,
     };
     const session = await createSession(existingUser)
-    res.status(200).json({ user: { ...user || {} }, token: session.accessToken, expiresAt: session.expiresAt, message: "Successfully LoggedIn!" })
+    
+    // Check if user is admin and get portal settings
+    let settings = null;
+    if (existingUser.role === "admin") {
+        settings = await PortalSettings.findOne({ userId: existingUser._id });
+    }
+    
+    res.status(200).json({ 
+        user: { ...user || {} }, 
+        token: session.accessToken, 
+        expiresAt: session.expiresAt, 
+        settings: settings,
+        message: "Successfully LoggedIn!" 
+    })
 })
 
 export const changePassword = httpMethod(async (req: Request, res: Response) => {

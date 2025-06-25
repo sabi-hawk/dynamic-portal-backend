@@ -11,6 +11,17 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8001;
 
+// --- Serve uploads with CORS at the very top ---
+app.use(
+  "/uploads",
+  cors({ origin: "*" }),
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+  },
+  express.static(path.join(__dirname, "../../uploads"))
+);
+
 // Parse JSON and URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,8 +47,6 @@ app.use((req, res, next) => {
 
 // serve legacy images path
 app.use("/images", express.static(path.join(__dirname, "../../uploads")));
-// serve uploads path for course materials
-app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 
 if (!process.env.MONGO_DB_CONNECTION_STRING) {
   throw new Error(
