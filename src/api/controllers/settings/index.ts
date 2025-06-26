@@ -62,7 +62,7 @@ export const updatePortalSettings = httpMethod(
         { new: true, upsert: true }
       );
 
-      res.status(200).json({ success: true, data: settings });
+      res.status(200).json(settings);
     } catch (error) {
       console.error("Error updating portal settings:", error);
       res.status(500).json({

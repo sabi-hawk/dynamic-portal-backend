@@ -151,6 +151,16 @@ export const login = httpMethod(async (req: Request, res: Response) => {
     let settings = null;
     if (existingUser.role === "admin") {
         settings = await PortalSettings.findOne({ userId: existingUser._id });
+    } else if (existingUser.role === "student") {
+        const student = await Student.findOne({ userId: existingUser._id });
+        if (student && student.instituteId) {
+            settings = await PortalSettings.findOne({ userId: student.instituteId });
+        }
+    } else if (existingUser.role === "teacher") {
+        const teacher = await Teacher.findOne({ userId: existingUser._id });
+        if (teacher && teacher.instituteId) {
+            settings = await PortalSettings.findOne({ userId: teacher.instituteId });
+        }
     }
     
     res.status(200).json({ 
