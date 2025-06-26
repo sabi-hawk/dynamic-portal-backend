@@ -163,6 +163,15 @@ export const login = httpMethod(async (req: Request, res: Response) => {
         }
     }
     
+    // checking if the user is student and the portal is not enabled for student
+    if (existingUser.role == "student" && !settings?.portalPermissions?.studentPortal?.enabled) {
+        throw new HttpError(400, "Portal is not enabled for this user");
+    }
+    // checking if the user is teacher and the portal is not enabled for teacher
+    if (existingUser.role == "teacher" && !settings?.portalPermissions?.teacherPortal?.enabled) {
+        throw new HttpError(400, "Portal is not enabled for this user");
+    }
+    
     res.status(200).json({ 
         user: { ...user || {} }, 
         token: session.accessToken, 
