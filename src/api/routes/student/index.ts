@@ -4,6 +4,7 @@ import * as studentController from "@controllers/student";
 import * as submissionController from "@controllers/submission";
 import { authenticateJwt } from "@middlewares/auth";
 import { uploadSubmission } from "@middlewares/fileUploader";
+import * as attendanceController from "@controllers/attendance";
 
 const studentRouter = express.Router();
 
@@ -39,5 +40,7 @@ studentRouter.get(
 
 // Course materials for a specific course and the student's section
 studentRouter.get("/materials", studentController.getStudentCourseMaterials);
+
+studentRouter.get("/attendance", attendanceController.getStudentAttendance);
 
 export default studentRouter;

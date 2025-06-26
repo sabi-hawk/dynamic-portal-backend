@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as teacherController from "@controllers/teacher";
 import * as submissionController from "@controllers/submission";
+import * as attendanceController from "@controllers/attendance";
 import { authenticateJwt } from "@middlewares/auth";
 
 const teacherRouter = Router();
@@ -22,6 +23,13 @@ teacherRouter.get("/submissions", submissionController.listTeacherSubmissions);
 teacherRouter.get(
   "/submission/:id/uploads",
   submissionController.getSubmissionUploads
+);
+
+teacherRouter.post("/attendance", attendanceController.markAttendance);
+teacherRouter.get("/attendance", attendanceController.getAttendanceForSchedule);
+teacherRouter.get(
+  "/attendance/students",
+  attendanceController.getStudentsForSchedule
 );
 
 export default teacherRouter;
