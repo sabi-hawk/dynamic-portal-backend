@@ -13,7 +13,12 @@ export const validateRegisterRequest = async (req: Request) => {
 
   const baseSchema = yup.object({
     username: yup.string().required("username is required"),
-    email: yup.string().email("not a valid email").trim().lowercase().required("email is required"),
+    email: yup
+      .string()
+      .email("not a valid email")
+      .trim()
+      .lowercase()
+      .required("email is required"),
     password: yup.string().required("password is required"),
     role: yup.string().required("role is required"),
     name: yup.string().required("name is required"),
@@ -29,13 +34,23 @@ export const validateRegisterRequest = async (req: Request) => {
     req.body.rollNo = count + 1;
     const studentSchema = yup.object({
       rollNo: yup.string().required("rollNo is required"),
-      department: yup.string().required("department is required"),
+      // University-specific fields
+      department: yup.string().optional(),
+      program: yup.string().optional(),
+      semester: yup.number().optional(),
+      // College-specific field
+      collegeYear: yup.string().optional(),
+      // School-specific field
+      schoolClass: yup.string().optional(),
+      // Common fields
       gender: yup.string().required("gender is required"),
       mobile: yup.string().required("mobile is required"),
       admissionDate: yup.date().required("admissionDate is required"),
     });
 
-    const studentData = await studentSchema.validate(req.body, { abortEarly: false });
+    const studentData = await studentSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
     return { ...baseData, studentData };
   }
@@ -47,12 +62,23 @@ export const validateRegisterRequest = async (req: Request) => {
       address: yup.string().optional(),
       status: yup.string().oneOf(["active", "inactive"]).optional(),
       joiningDate: yup.date().required("joining date is required"),
-      gender: yup.string().oneOf(["Male", "Female", "Other"]).required("gender is required"),
-      degree: yup.string().oneOf(["Bachelors", "Masters", "PhD"]).required("degree is required"),
-      section: yup.string().oneOf(["A", "B", "C", "D", "E", "F"]).required("section is required"),
+      gender: yup
+        .string()
+        .oneOf(["Male", "Female", "Other"])
+        .required("gender is required"),
+      degree: yup
+        .string()
+        .oneOf(["Bachelors", "Masters", "PhD"])
+        .required("degree is required"),
+      section: yup
+        .string()
+        .oneOf(["A", "B", "C", "D", "E", "F"])
+        .required("section is required"),
     });
 
-    const teacherData = await teacherSchema.validate(req.body, { abortEarly: false });
+    const teacherData = await teacherSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
     return { ...baseData, teacherData };
   }
@@ -62,9 +88,14 @@ export const validateRegisterRequest = async (req: Request) => {
 
 export const validateLoginRequest = async (req: Request) => {
   const schema = yup.object().shape({
-    email: yup.string().email("not a valid email").trim().lowercase().required("email is required"),
-    password: yup.string().required("password is required")
-  })
+    email: yup
+      .string()
+      .email("not a valid email")
+      .trim()
+      .lowercase()
+      .required("email is required"),
+    password: yup.string().required("password is required"),
+  });
 
   return schema.validate(req.body, { abortEarly: false });
-}
+};
