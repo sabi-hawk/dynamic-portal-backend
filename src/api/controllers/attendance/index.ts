@@ -101,11 +101,22 @@ export const getStudentsForSchedule = httpMethod(
     const sched = await CourseSchedule.findById(courseScheduleId);
     if (!sched) throw new HttpError(404, "Schedule not found");
 
-    // fetch students of this section
-    const students = await Student.find({ section: sched.section }).populate({
-      path: "userId",
-      select: "name",
-    });
+    // Get teacher's instituteId
+    const teacherId = req.user?.id;
+    const teacher = await import("@models/Teacher").then((m) =>
+      m.default.findById(teacherId).select("instituteId")
+    );
+
+    if (!teacher) {
+      throw new HttpError(404, "Teacher not found");
+    }
+
+    // fetch students of this institute and section
+    const students = await Student.find({
+      instituteId: teacher.instituteId,
+      section: sched.section,
+    }).populate({ path: "userId", select: "name" });
+
     res.status(200).json(students);
   }
 );
