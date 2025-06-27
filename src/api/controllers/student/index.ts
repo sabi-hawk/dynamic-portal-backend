@@ -138,13 +138,29 @@ export const getStudentSchedule = httpMethod(
       );
     }
 
-    // Get all schedules for this student's section
-    const schedules = await CourseSchedule.find({ section: student.section })
-      .populate("course", "courseCode courseName description status")
-      .populate("instructor", "name department")
-      .sort({ "schedule.startTime": 1 });
+    const Course = (await import("@models/Course")).default;
+    const courseIds = (
+      await Course.find({ instituteId: student.instituteId }).select("_id")
+    ).map((c: any) => c._id);
 
-    res.status(200).json(schedules);
+    const schedules = await CourseSchedule.find({
+      section: student.section,
+      course: { $in: courseIds },
+    })
+      .populate("course", "courseCode courseName description status")
+      .populate({
+        path: "instructor",
+        match: { instituteId: student.instituteId },
+        select: "name department",
+      })
+      .sort({ "schedule.startTime": 1 })
+      .lean();
+
+    const filteredSchedules = schedules.filter(
+      (s: any) => s.course && s.instructor
+    );
+
+    res.status(200).json(filteredSchedules);
   }
 );
 
@@ -165,16 +181,30 @@ export const getStudentTodaySchedules = httpMethod(
     // Get current day of week
     const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
 
-    // Get schedules for today for this student's section
+    const Course = (await import("@models/Course")).default;
+    const courseIds = (
+      await Course.find({ instituteId: student.instituteId }).select("_id")
+    ).map((c: any) => c._id);
+
     const todaySchedules = await CourseSchedule.find({
       section: student.section,
+      course: { $in: courseIds },
       "schedule.daysOfWeek": today,
     })
       .populate("course", "courseCode courseName description status")
-      .populate("instructor", "name department")
-      .sort({ "schedule.startTime": 1 });
+      .populate({
+        path: "instructor",
+        match: { instituteId: student.instituteId },
+        select: "name department",
+      })
+      .sort({ "schedule.startTime": 1 })
+      .lean();
 
-    res.status(200).json(todaySchedules);
+    const filteredToday = todaySchedules.filter(
+      (s: any) => s.course && s.instructor
+    );
+
+    res.status(200).json(filteredToday);
   }
 );
 
@@ -193,24 +223,38 @@ export const getStudentTodaySchedulesWithInstructor = httpMethod(
     }
 
     // Get current day of week
-    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+    const today = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+
+    // Limit to courses that belong to the same institute
+    const Course = (await import("@models/Course")).default;
+    const coursesOfInstitute = await Course.find({
+      instituteId: student.instituteId,
+    }).select("_id");
+    const courseIds = coursesOfInstitute.map((c: any) => c._id);
 
     // Get schedules for today for this student's section with nested population
     const todaySchedules = await CourseSchedule.find({
       section: student.section,
+      course: { $in: courseIds },
       "schedule.daysOfWeek": today,
     })
       .populate("course", "courseCode courseName description status")
       .populate({
         path: "instructor",
-        populate: {
-          path: "userId",
-          select: "username name email",
-        },
+        match: { instituteId: student.instituteId },
+        populate: { path: "userId", select: "username name email" },
       })
-      .sort({ "schedule.startTime": 1 });
+      .sort({ "schedule.startTime": 1 })
+      .lean();
 
-    res.status(200).json(todaySchedules);
+    // remove any with null course or instructor after match
+    const filteredToday = todaySchedules.filter(
+      (s: any) => s.course && s.instructor
+    );
+
+    res.status(200).json(filteredToday);
   }
 );
 
@@ -230,10 +274,18 @@ export const getStudentCourses = httpMethod(
     }
     console.log("Found student with section:", student.section);
 
-    // Get all schedules for this student's section and populate course data
+    // limit courses to student's institute
+    const Course = (await import("@models/Course")).default;
+    const coursesOfInstitute = await Course.find({
+      instituteId: student.instituteId,
+    }).select("_id");
+    const courseIds = coursesOfInstitute.map((c: any) => c._id);
+
+    // Get schedules for this student's section and institute and populate course data
     const schedules = await CourseSchedule.find({
       section: student.section,
       status: "active",
+      course: { $in: courseIds },
     })
       .populate("course", "courseCode courseName description status")
       .sort({ "course.courseName": 1 });
@@ -242,10 +294,10 @@ export const getStudentCourses = httpMethod(
 
     // Extract unique courses from schedules
     const uniqueCourses = schedules.reduce((acc: any[], schedule: any) => {
-      const courseId = schedule.course._id.toString();
+      const courseId = schedule.course?._id?.toString();
       const existingCourse = acc.find((c) => c._id === courseId);
 
-      if (!existingCourse) {
+      if (courseId && !existingCourse) {
         acc.push({
           _id: schedule.course._id,
           courseCode: schedule.course.courseCode,
