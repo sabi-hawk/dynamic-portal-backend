@@ -5,6 +5,7 @@ import helmet from "helmet";
 import path from "path";
 import dotenv from "dotenv";
 import apiRouter from "./routes";
+import { scheduleWeeklyLeaveCleanup } from "@utils/cron";
 
 dotenv.config();
 
@@ -58,6 +59,8 @@ mongoose
   .connect(process.env.MONGO_DB_CONNECTION_STRING)
   .then(() => {
     console.log("Connected to Database");
+    // Init cron jobs after DB is ready
+    scheduleWeeklyLeaveCleanup();
   })
   .catch((error) => {
     console.error("MongoDB connection error:", error);

@@ -5,6 +5,7 @@ import * as submissionController from "@controllers/submission";
 import { authenticateJwt } from "@middlewares/auth";
 import { uploadSubmission } from "@middlewares/fileUploader";
 import * as attendanceController from "@controllers/attendance";
+import * as leaveController from "@controllers/leave";
 
 const studentRouter = express.Router();
 
@@ -42,5 +43,10 @@ studentRouter.get(
 studentRouter.get("/materials", studentController.getStudentCourseMaterials);
 
 studentRouter.get("/attendance", attendanceController.getStudentAttendance);
+
+// Leave management
+studentRouter.get("/leaves", leaveController.getStudentLeaves);
+studentRouter.get("/leaves/courses", studentController.getStudentCourses);
+studentRouter.post("/leaves", leaveController.createLeaveRequest);
 
 export default studentRouter;

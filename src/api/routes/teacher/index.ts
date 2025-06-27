@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as teacherController from "@controllers/teacher";
 import * as submissionController from "@controllers/submission";
 import * as attendanceController from "@controllers/attendance";
+import * as leaveController from "@controllers/leave";
 import { authenticateJwt } from "@middlewares/auth";
 
 const teacherRouter = Router();
@@ -31,5 +32,9 @@ teacherRouter.get(
   "/attendance/students",
   attendanceController.getStudentsForSchedule
 );
+
+// Leave management
+teacherRouter.get("/leaves", leaveController.getTeacherLeaves);
+teacherRouter.patch("/leaves/:id", leaveController.updateLeaveStatus);
 
 export default teacherRouter;
