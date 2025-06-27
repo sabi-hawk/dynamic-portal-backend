@@ -17,7 +17,7 @@
       "grade",
       "time-table",
       "course-material",
-      "settings"
+      "announcements"
     ],
     "student": [
       "dashboard",
@@ -25,7 +25,7 @@
       "assignments",
       "grade",
       "time-table",
-      "settings"
+      "announcements"
     ]
   },
   "college": {
@@ -45,8 +45,7 @@
       "attendance",
       "grade",
       "time-table",
-      "announcements",
-      "settings"
+      "announcements"
     ],
     "student": [
       "dashboard",
@@ -55,7 +54,7 @@
       "time-table",
       "attendance",
       "course-material",
-      "settings"
+      "announcements"
     ]
   },
   "university": {
@@ -80,12 +79,11 @@
       "time-table",
       "course-material",
       "submission",
-      "settings"
+      "announcements"
     ],
     "student": [
       "dashboard",
       "courses",
-      "announcements",
       "attendance",
       "grade",
       "leaves",
@@ -93,7 +91,7 @@
       "time-table",
       "course-material",
       "submission",
-      "settings"
+      "announcements"
     ]
   }
 }
