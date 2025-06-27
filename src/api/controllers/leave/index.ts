@@ -100,7 +100,7 @@ export const getTeacherLeaves = httpMethod(
     const currentWeek = getIsoWeekRange();
 
     const leaves = await LeaveRequest.find({
-      status: "pending",
+      archived: false,
       "weekRange.start": currentWeek.start,
     })
       .populate({
