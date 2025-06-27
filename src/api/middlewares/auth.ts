@@ -14,6 +14,7 @@ declare global {
         id: string;
         email: string;
         sessionId: string;
+        role: string;
       };
     }
   }
@@ -44,6 +45,7 @@ export const authenticateJwt = (
       email: string;
       userId: string;
       sessionId: string;
+      role: string;
     };
 
     // Check if session exists and is not expired
@@ -81,6 +83,7 @@ export const authenticateJwt = (
           id: finalUserId,
           email: decoded.email,
           sessionId: decoded.sessionId,
+          role: decoded.role,
         };
 
         next();

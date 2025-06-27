@@ -22,4 +22,17 @@ export const uploadMaterial = multer({ storage: createStorage("materials") });
 export const uploadSubmission = multer({
   storage: createStorage("submissions"),
 });
+export const uploadAnnouncementImage = multer({ storage: createStorage("announcement") });
+// const announcementStorage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(__dirname, "../../../../uploads/announcements/"));
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, uniqueSuffix + path.extname(file.originalname));
+//   },
+// });
+
+// export const uploadAnnouncementImage = multer({ storage: announcementStorage });
+
 // Add other upload types as needed

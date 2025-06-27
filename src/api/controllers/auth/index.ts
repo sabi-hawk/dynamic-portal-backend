@@ -261,7 +261,7 @@ const createSession = async (user: UserType) => {
     expiresAt: expiresAt,
   }).save();
   const token = jwt.sign(
-    { email: user.email, userId: user._id, sessionId: newSession._id },
+    { email: user.email, userId: user._id, sessionId: newSession._id, role: user.role },
     SECRET
   );
   newSession.accessToken = token;
