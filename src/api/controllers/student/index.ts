@@ -11,13 +11,42 @@ import bcrypt from "bcrypt";
 export const addStudent = httpMethod(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
-  // Count existing students in this institute to determine the next roll number
-  const count = await Student.countDocuments({ instituteId: userId });
+  // If classId and sectionId are provided (for schools), validate them
+  if (req.body.classId) {
+    const Class = (await import("@models/Class")).default;
+    const classExists = await Class.findOne({
+      _id: req.body.classId,
+      instituteId: userId,
+    });
+    if (!classExists) {
+      throw new HttpError(404, "Class not found");
+    }
+  }
+
+  if (req.body.sectionId) {
+    const Section = (await import("@models/Section")).default;
+    const sectionExists = await Section.findOne({
+      _id: req.body.sectionId,
+      instituteId: userId,
+    });
+    if (!sectionExists) {
+      throw new HttpError(404, "Section not found");
+    }
+  }
+
+  // Auto-generate roll number if not provided
+  let rollNo = req.body.rollNo;
+  if (!rollNo) {
+    const count = await Student.countDocuments({ instituteId: userId });
+    rollNo = (count + 1).toString();
+  }
+
   const newStudent = await Student.create({
     ...req.body,
     instituteId: userId,
-    rollNo: count + 1,
+    rollNo,
   });
+
   res
     .status(201)
     .json({ message: "Student added successfully", student: newStudent });
@@ -26,8 +55,17 @@ export const addStudent = httpMethod(async (req: Request, res: Response) => {
 // Get all students
 export const getStudents = httpMethod(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  const students = await Student.find({ instituteId: userId })
+  const { classId, sectionId } = req.query;
+
+  // Build query based on filters
+  let query: any = { instituteId: userId };
+  if (classId) query.classId = classId;
+  if (sectionId) query.sectionId = sectionId;
+
+  const students = await Student.find(query)
     .populate({ path: "userId", select: "email name" })
+    .populate({ path: "classId", select: "className description" })
+    .populate({ path: "sectionId", select: "sectionName" })
     .sort({ createdAt: -1 });
 
   const formattedStudents = students.map((student) => {
@@ -78,6 +116,31 @@ export const updateStudent = httpMethod(async (req: Request, res: Response) => {
   if (!student) {
     throw new HttpError(404, "Student not found");
   }
+
+  // If classId is being updated (for schools), validate it
+  if (updateData.classId) {
+    const Class = (await import("@models/Class")).default;
+    const classExists = await Class.findOne({
+      _id: updateData.classId,
+      instituteId: userId,
+    });
+    if (!classExists) {
+      throw new HttpError(404, "Class not found");
+    }
+  }
+
+  // If sectionId is being updated (for schools), validate it
+  if (updateData.sectionId) {
+    const Section = (await import("@models/Section")).default;
+    const sectionExists = await Section.findOne({
+      _id: updateData.sectionId,
+      instituteId: userId,
+    });
+    if (!sectionExists) {
+      throw new HttpError(404, "Section not found");
+    }
+  }
+
   // If email, password, or name is being updated, update the user record
   if (updateData.email || updateData.password || updateData.name) {
     const userUpdate: any = {};
@@ -96,7 +159,10 @@ export const updateStudent = httpMethod(async (req: Request, res: Response) => {
     id,
     studentUpdateData,
     { new: true }
-  );
+  ).populate([
+    { path: "classId", select: "className description" },
+    { path: "sectionId", select: "sectionName" },
+  ]);
   res.status(200).json({
     message: "Student updated successfully",
     student: updatedStudent,

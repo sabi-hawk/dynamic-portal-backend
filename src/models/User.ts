@@ -5,10 +5,20 @@ const UserSchema = new Schema({
     first: { type: String, trim: true },
     last: { type: String, trim: true },
   },
-  email: { type: String, trim: true, lowercase: true, required: true, unique: true },
+  email: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    required: true,
+    unique: true,
+  },
   username: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["admin", "student", "teacher"], default: "student" },
+  role: {
+    type: String,
+    enum: ["admin", "student", "teacher"],
+    default: "student",
+  },
 
   // Optional references
   studentProfile: { type: Schema.Types.ObjectId, ref: "Student" },
